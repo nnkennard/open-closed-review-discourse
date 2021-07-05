@@ -110,33 +110,40 @@ def load_annotations(file_path):
         data['fields']['ratings'] = json.loads(data['fields']['ratings'])
     return annotation_data
     
+METAREVIEW = "metareview"
+BINARY_FIELDS = ("importance originality method presentation interpretation "
+                  "reproducibility").split()
+
+def metareview_cleanup(key, value):
+    if key == value:
+        return key
+    elif key.lower() == METAREVIEW:
+        return value
+    else:
+        assert value.lower() == METAREVIEW
+        return key
+
+def clean_ratings(ratings_json, pk):
+    new_ratings = {}
+    for k, v in ratings_json.items():
+        try:
+            int_value = int(v)
+            if k in BINARY_FIELDS:
+                if pk < 28:
+                    int_value = int(int_value > 2)
+                else:
+                    assert int_value in range(2)
+            new_ratings[k.lower()] = int_value
+        except ValueError: # Probably metareview field
+            new_ratings[METAREVIEW] = metareview_cleanup(k, v)
+    return new_ratings
 
 def correct_annotations(annotation_data):
-    # correct problems in json format
-    # like changing initial annotation values to binary
-    # and making dictionary keys all lower case
-    
-    for data in annotation_data[:20]:
-        for k, v in data['fields']['ratings'].items():
-            # Change first 20 annotations to binary range
-            value = check_binary(k.lower(), v)
-            data['fields']['ratings'][k] = value
-    
-    # Needed to do this separately since it gave an
-    # error: "dictionary size changed during iteration"
-    for data in annotation_data:
-        for k in data['fields']['ratings']:
-            v = data['fields']['ratings'][k]
-            # Switch metareview key-value
-            if v == 'metareview':
-                del data['fields']['ratings'][k]
-                data['fields']['ratings'][v] = k
-
-            # Convert all other annotation keys to lower-case
-            elif k != k.lower():
-                del data['fields']['ratings'][k]
-                data['fields']['ratings'][k.lower()] = v
-    return annotation_data
+  cleaned_annotation_obj = []
+  for i in annotation_data:
+    i["fields"]["ratings"] = clean_ratings(i["fields"]["ratings"], i["pk"])
+    cleaned_annotation_obj.append(i)
+  return cleaned_annotation_obj
 
 
 def get_latest_annotations_only(annotation_data):
