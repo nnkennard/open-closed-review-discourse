@@ -4,7 +4,7 @@
 # Step 1: Process annotations
 ##################################################
 echo "\nProcessing annotations ...";
-# python process_labeled_data.py
+python process_labeled_data.py
 
 
 ##################################################
@@ -13,15 +13,22 @@ echo "\nProcessing annotations ...";
 echo "\nRunning models and generating features"
 python generate_argument_labels.py -m 'scibert' -f '../data/json_data/acl17.json'
 
-python generate_aspect_tagger_input_data.py  -f '../data/json_data/acl17.json'
+python generate_aspect_tagger_input_data.py  -f '../data/json_data/acl17.json' -v 'acl17'
 sh run_aspect_tagger.sh "acl17 "
 
 # TODO: Add specificity data generation and model running code
 python generate_specificity_labels.py
 
 # TODO: Add corpus creation code for any JSON
-# python create_neurips_corpus.py
-# python add_politeness_features.py
+for YEAR in {2018..2021}; do
+    python create_iclr_json.py -y $YEAR -l 5;
+    python create_iclr_corpus.py -y $YEAR -l 5;
+    python add_politeness_features.py -c 'iclr' -y $YEAR;
+done
+python create_neurips_corpus.py
+for YEAR in {2018..2019}; do
+    python add_politeness_features.py -c 'neurips' -y $YEAR;
+done
 
 
 ##################################################
@@ -30,12 +37,12 @@ python generate_specificity_labels.py
 echo "\nLoading features for labeled data...";
 python load_features.py -l True
 
-# echo "\nLoading features for unlabeled data...";
-# declare -a arr=("iclr19" "neurips19" "neurips19_sm" "iclr18" "neurips18" "neurips18_sm")
-# for VENUE in "${arr[@]}"; do
-#    echo "$VENUE";
-#    python load_features.py -u -v $VENUE;
-# done
+echo "\nLoading features for unlabeled data...";
+declare -a arr=("iclr19" "neurips19" "neurips19_sm" "iclr18" "neurips18" "neurips18_sm")
+for VENUE in "${arr[@]}"; do
+   echo "$VENUE";
+   python load_features.py -u -v $VENUE;
+done
 
 
 ##################################################

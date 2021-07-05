@@ -20,8 +20,15 @@ sh run_aspect_tagger.sh "iclr19 neurips19 iclr18 neurips18"
 python generate_specificity_labels.py
 
 # TODO: Add corpus creation code for any JSON
+for YEAR in {2018..2021}; do
+    python create_iclr_json.py -y $YEAR;
+    python create_iclr_corpus.py -y $YEAR;
+    python add_politeness_features.py -c 'iclr' -y $YEAR;
+done
 python create_neurips_corpus.py
-python add_politeness_features.py
+for YEAR in {2018..2019}; do
+    python add_politeness_features.py -c 'neurips' -y $YEAR;
+done
 
 
 ##################################################

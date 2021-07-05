@@ -1,3 +1,11 @@
+import torch
+import json
+import re
+import nltk
+import glob
+import pandas as pd
+import numpy as np
+
 from tqdm.notebook import tqdm
 from transformers import pipeline, AutoTokenizer, AutoModelForQuestionAnswering
 from torch.utils.data import DataLoader, SequentialSampler
@@ -84,7 +92,10 @@ def process_review_file(filepath, data_dict, count, venue):
     return count
 
 
-def get_model_and_tokenizer(model_type):
+def run_arguments_model(model_type, data_df, save_all=False):
+    """
+    Runs the trained argument models in evaluation mode
+    """
     model_dict = {
         'bert': {
             'base': "bert-base-uncased",
@@ -113,15 +124,6 @@ def get_model_and_tokenizer(model_type):
         model_dict[model_type]['base'],
         do_lower_case=True
     )
-
-    return model, tokenizer
-
-
-def run_arguments_model(model_type, data_df, save_all=False):
-    """
-    Runs the trained argument models in evaluation mode
-    """
-    model, tokenizer = get_model_and_tokenizer(model_type)
     encoded_data_test = tokenizer.batch_encode_plus(
         data_df.review_sent.values, 
         add_special_tokens=True, 

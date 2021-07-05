@@ -24,6 +24,7 @@ feature_maps = {
         'ps_corpus': '../data/convokit/neurips19_corpus_ps',
     }
 }
+ARGUMENT_LABELS_FILEPATH = '../data/arguments/predictions.csv'
 
 
 def get_liwc_data(venues):
@@ -37,7 +38,7 @@ def get_liwc_data(venues):
 
 def get_argument_data(venues):
     venues = [feature_maps[venue]['argument_col'] for venue in venues]
-    file_path = '../data/arguments/predictions.csv'
+    file_path = ARGUMENT_LABELS_FILEPATH
     df = pd.read_csv(file_path, index_col=0)
     df = df[df['venue'].isin(venues)]
     argument_data = {}
@@ -335,7 +336,7 @@ def get_labeled_features_df():
         lambda x: 'neurips18' if 'NIPS' in x else 'iclr18'
     )
     # TODO: get venues from unique venues in df
-    venues = ['iclr18', 'neurips18']
+    venues = df['venue'].unique().values
     return get_features(df, venues)
 
 

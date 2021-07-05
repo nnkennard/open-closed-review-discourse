@@ -1,6 +1,7 @@
 import json
 import re
-
+import nltk
+nltk.download('punkt')
 
 data_dir = '../data/json_data/'
 
